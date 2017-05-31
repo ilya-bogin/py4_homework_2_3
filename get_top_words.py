@@ -3,13 +3,13 @@ import json
 import re
 
 news_files  = [
-  './newsfr.json', 
-  './newsfr.json',
-  './newsfr.json',
-  './newsfr.json']
+  {'file' : './newsafr.json', 'encoding' : 'KOI8-R'},
+  {'file' : './newscy.json', 'encoding' : 'KOI8-R'},
+  {'file' : './newsfr.json', 'encoding' : 'iso8859_5'},
+  {'file' : './newsit.json', 'encoding' : 'CP1251'}]
 
-def read_rss_items_from_file(file_name):
-  with codecs.open(file_name, encoding="iso8859_5") as data:
+def read_rss_items_from_file(file_name, encoding_type):
+  with codecs.open(file_name, encoding=encoding_type) as data:
     rss = json.load(data)
     return rss['rss']['channel']['item']
 
@@ -29,13 +29,19 @@ def caculate_long_words_frequency(words):
   return frequency_map
 
 
+def get_top_items_from_frequency_map(frequency_map, number_of_items):
+  return sorted(frequency_map, key=frequency_map.get, reverse=True)[:number_of_items]
+
+
 def main():
+  all_words = []
   for news_file in news_files:
-    print('Parse {}'.format(news_file))
-    rss_items = read_rss_items_from_file(news_file)
-    words = convert_rss_items_to_words(rss_items)
-    frequency_map = caculate_long_words_frequency(words)
-    print(frequency_map)
+    print('Parse {}'.format(news_file['file']))
+    rss_items = read_rss_items_from_file(news_file['file'], news_file['encoding'])
+    all_words.extend(convert_rss_items_to_words(rss_items))
+  frequency_map = caculate_long_words_frequency(all_words)
+  top_ten_words = get_top_items_from_frequency_map(frequency_map, 10)
+  print(top_ten_words)
 
 
 main()
